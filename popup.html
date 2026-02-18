@@ -1,0 +1,224 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CS2 MultiSell</title>
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      width: 420px;
+      margin: 12px;
+    }
+
+    h1 {
+      font-size: 16px;
+      margin: 0 0 8px;
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* Text-like inputs only */
+    input[type="text"],
+    input[type="search"] {
+      width: 100%;
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px solid #333;
+      background: #111;
+      color: #eee;
+    }
+
+    /* Fix checkbox sizing */
+    input[type="checkbox"] {
+      width: auto;
+      padding: 0;
+      margin: 0 4px 0 0;
+      flex: 0 0 auto;
+    }
+
+    button {
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid #333;
+      background: #1b1b1b;
+      color: #eee;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .muted {
+      opacity: 0.75;
+      font-size: 12px;
+    }
+
+    .status {
+      margin: 8px 0;
+      white-space: pre-wrap;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0;
+    }
+
+    .toolbar button {
+      flex: 1;
+    }
+
+    .search {
+      margin: 8px 0;
+    }
+
+    .list {
+      margin-top: 8px;
+      max-height: 520px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      border: 1px solid #333;
+      border-radius: 12px;
+      scrollbar-gutter: auto;
+
+      /* Hide scrollbar (Firefox/modern) */
+      scrollbar-width: none;
+      /* Firefox */
+      -ms-overflow-style: none;
+      /* old Edge/IE */
+    }
+
+    /* Hide scrollbar (Chrome/Safari/Edge) */
+    .list::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+    }
+
+    .item {
+      display: flex;
+      gap: 10px;
+      padding: 10px;
+      align-items: center;
+      border-bottom: 1px solid #2a2a2a;
+    }
+
+    .item:last-child {
+      border-bottom: none;
+    }
+
+    .item:hover {
+      background: #171717;
+    }
+
+    .icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: #0b0b0b;
+      border: 1px solid #2a2a2a;
+      object-fit: contain;
+    }
+
+    .name {
+      font-size: 13px;
+      line-height: 1.2;
+    }
+
+    .meta {
+      font-size: 12px;
+      opacity: 0.75;
+      margin-top: 2px;
+    }
+
+    .grow {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .count {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .pill {
+      padding: 2px 6px;
+      border: 1px solid #333;
+      border-radius: 999px;
+      font-size: 12px;
+      opacity: 0.85;
+    }
+
+    .error {
+      color: #ff6b6b;
+    }
+
+    .ok {
+      color: #7CFC98;
+    }
+
+    a.fake {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .footer {
+      margin-top: 8px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .footer input {
+      flex: 1;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>CS2 Inventory → MultiSell</h1>
+
+  <div class="row">
+    <input id="steamid" placeholder="SteamID64 (e.g. 7656...)" />
+    <button id="autofill" title="Try to detect SteamID64 from current Steam tab">Auto</button>
+    <button id="load">Load</button>
+  </div>
+  <div class="muted" style="margin-top:6px;">
+    Uses appid=730, contextid=2. Click an item row to open multisell for that item.
+  </div>
+
+  <div id="status" class="status muted"></div>
+
+  <div class="toolbar">
+    <button id="openSelected" disabled>Open multisell (selected)</button>
+    <button id="copySelected" disabled>Copy link (selected)</button>
+    <button id="selectAll" disabled>Select all</button>
+    <button id="clearSel" disabled>Clear</button>
+  </div>
+
+  <div class="search">
+    <input id="filter" placeholder="Filter by name…" disabled />
+  </div>
+
+  <div id="list" class="list"></div>
+
+  <div class="footer">
+    <input id="lastLink" placeholder="Generated link appears here…" readonly />
+    <button id="copyLast" disabled>Copy</button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+
+</html>
