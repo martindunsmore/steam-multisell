@@ -134,13 +134,15 @@ async function fetchInventoryAll(steamid64) {
 
 function groupByMarketHashName(assets, descIndex) {
   // Returns array of:
-  // { name, icon_url, total, tradable, marketable }
+  // { name, icon_url, total, tradable, marketable, commodity }
   const map = new Map();
 
   for (const a of assets) {
     const key = `${a.classid}_${a.instanceid || "0"}`;
     const d = descIndex.get(key);
-    const name = d?.market_hash_name || d?.name;
+    if (!d) continue;
+
+    const name = d.market_hash_name || d.name;
     if (!name) continue;
 
     const amt = Number(a.amount || 1);
@@ -148,17 +150,31 @@ function groupByMarketHashName(assets, descIndex) {
     if (!map.has(name)) {
       map.set(name, {
         name,
-        icon_url: d?.icon_url || "",
+        icon_url: d.icon_url || "",
         total: 0,
-        tradable: d?.tradable ?? 0,
-        marketable: d?.marketable ?? 0
+        tradable: d.tradable ?? 0,
+        marketable: d.marketable ?? 0,
+        commodity: d.commodity ?? 0,
+        name_color: d.name_color || null
       });
+
     }
-    map.get(name).total += amt;
+
+    const entry = map.get(name);
+    entry.total += amt;
+
+    // if any instance reports commodity, treat it as commodity
+    if (d.commodity) entry.commodity = 1;
   }
 
-  // Sort: most owned first, then name
-  return [...map.values()].sort((x, y) => (y.total - x.total) || x.name.localeCompare(y.name));
+  const onlyTradableCommodities = [...map.values()].filter(
+    x => x.commodity === 1 && x.tradable === 1
+  );
+
+
+  return onlyTradableCommodities.sort(
+    (x, y) => (y.total - x.total) || x.name.localeCompare(y.name)
+  );
 }
 
 function normalize(s) {
@@ -245,6 +261,10 @@ function setButtonsEnabled(enabled) {
       name.className = "name";
       name.textContent = it.name;
 
+      if (it.name_color) {
+        name.style.color = `#${it.name_color}`;
+      }
+
       const meta = document.createElement("div");
       meta.className = "meta";
       const flags = [];
@@ -329,7 +349,7 @@ function setButtonsEnabled(enabled) {
 
       setButtonsEnabled(true);
       setStatus(
-        `Loaded ${items.length} unique market items (${inv.assets.length} assets) using count=${inv.countUsed}` +
+        `Loaded ${items.length} unique marketable items (${inv.assets.length} assets) using count=${inv.countUsed}` +
         (inv.partial ? "\n(Partial: Steam did not provide a next page token.)" : ""),
         "ok"
       );
